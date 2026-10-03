@@ -84,11 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
 
     function renderPointerEffects() {
-      cursorX += (mouseX - cursorX) * 0.25;
-      cursorY += (mouseY - cursorY) * 0.25;
+      cursorX += (mouseX - cursorX) * 0.35;
+      cursorY += (mouseY - cursorY) * 0.35;
 
-      blobX += (mouseX - blobX) * 0.08;
-      blobY += (mouseY - blobY) * 0.08;
+      blobX += (mouseX - blobX) * 0.1;
+      blobY += (mouseY - blobY) * 0.1;
 
       if (macCursor) {
         macCursor.style.transform = `translate3d(${cursorX}px, ${cursorY}px, 0)`;
@@ -158,36 +158,33 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(drawMatrixRain, 40);
   }
 
-  const laptopContainer = document.getElementById('laptop-scroll-container') || document.querySelector('.laptop-scroll-container');
-  const laptopLid = document.getElementById('laptop-lid') || document.querySelector('.laptop-lid');
+  const laptopScene = document.getElementById('laptop-scene');
+  const altLaptop = document.getElementById('alt-laptop');
 
-  let ticking = false;
+  if (laptopScene && altLaptop) {
+    laptopScene.addEventListener('mousemove', (e) => {
+      const rect = laptopScene.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const rotateX = ((y - centerY) / centerY) * -15 + 20;
+      const rotateY = ((x - centerX) / centerX) * 20 - 15;
+      
+      altLaptop.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
 
-  function updateLaptopAngle() {
-    if (!laptopContainer || !laptopLid) return;
+    laptopScene.addEventListener('mouseleave', () => {
+      altLaptop.style.transform = 'rotateX(20deg) rotateY(-15deg)';
+      altLaptop.style.transition = 'transform 0.5s ease';
+    });
 
-    const rect = laptopContainer.getBoundingClientRect();
-    const totalHeight = laptopContainer.clientHeight - window.innerHeight;
-
-    if (totalHeight <= 0) return;
-
-    let progress = -rect.top / totalHeight;
-    progress = Math.max(0, Math.min(1, progress));
-
-    const angle = -90 + progress * 85;
-    laptopLid.style.transform = `rotateX(${angle}deg)`;
-    ticking = false;
+    laptopScene.addEventListener('mouseenter', () => {
+      altLaptop.style.transition = 'none';
+    });
   }
-
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(updateLaptopAngle);
-      ticking = true;
-    }
-  }, { passive: true });
-
-  window.addEventListener('resize', updateLaptopAngle, { passive: true });
-  updateLaptopAngle();
 
   const skillCards = document.querySelectorAll('.skill-card');
   const skillObserver = new IntersectionObserver(
@@ -236,6 +233,7 @@ function changeWallpaper(wallpaperClass, element) {
   const isLightTheme = document.body.classList.contains('light-theme');
   document.body.className = `${wallpaperClass} ${isLightTheme ? 'light-theme' : 'dark-theme'}`;
 
+  document.querySelectorAll('.wp-btn').wpForEach?.((btn) => btn.classList.remove('active'));
   document.querySelectorAll('.wp-btn').forEach((btn) => btn.classList.remove('active'));
   element?.classList.add('active');
 }
